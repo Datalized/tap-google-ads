@@ -7,6 +7,7 @@ from singer import Transformer
 from singer import utils
 from google.protobuf.json_format import MessageToJson
 from google.ads.googleads.errors import GoogleAdsException
+from google.api_core.exceptions import InternalServerError
 import backoff
 from . import report_definitions
 
@@ -117,6 +118,9 @@ retryable_errors = [
 
 
 def should_give_up(ex):
+    if isinstance(ex, InternalServerError):
+        return False
+
     if isinstance(ex, AttributeError):
         if str(ex) == "'NoneType' object has no attribute 'Call'":
             LOGGER.info('Retrying request due to AttributeError')
